@@ -1,0 +1,118 @@
+# Rural Drainage Automation Engine - Central Configuration
+# Engine v2.1.0 | Platform: Windows | Python 3.12
+#
+# NOTE: Parameters below are currently hardcoded in engine source as Python
+# constants. This file serves as the single-source reference. Future work
+# should wire each engine module to read from this file at startup.
+
+# WhiteboxTools binary path (relative to project root)
+whitebox_exe: "whitebox/WhiteboxTools_win_amd64/WBT/whitebox_tools.exe"
+
+# ── AI Point Cloud Classification (Level 1 Integration) ──────────────────
+# Safe AI integration with automatic SMRF fallback
+ai_point_classification:
+  # Enable AI classification (default: false for safety/reproducibility)
+  enable_ai: false
+  # Path to pre-trained model (required if enable_ai: true)
+  model_path: "models/FRACTAL-LidarHD_7cl_randlanet.ckpt"
+  # Model type: 'pointnet', 'randla', 'dgcnn', 'sklearn_rf'
+  model_type: "randla"
+  # Class names for output
+  class_names: ["Other", "Ground", "Vegetation", "Building", "Water", "Bridge", "PermanentStructure"]
+  # Label indices treated as ground during LAS export (LAS class code 2)
+  # FRACTAL 7-class model uses label index 1 for Ground.
+  ground_labels: [1]
+
+# Ground Classification (SMRF)
+smrf:
+  slope: 0.2
+  window: 10.0
+  threshold: 0.45
+  scalar: 1.25
+
+# Extended Local Minimum (ELM) Outlier Filter
+elm:
+  cell_size: 10.0
+  threshold: 1.0
+
+# Point Cloud Preprocessing
+preprocess:
+  k_mad: 6.0
+  mad_floor: 1.0
+  subsample_target: 1000000
+  tile_size_m: 300
+  max_points_per_tile: 30000000
+  max_tiles: 200
+  streaming_threshold: 100000000
+
+# DTM Interpolation (IDW)
+dtm:
+  resolution_m: 1.0
+  idw_radius_m: 4.0
+  void_fill_dist: 15
+  nodata: -9999.0
+
+# Anomaly Detection
+anomaly:
+  median_window: 51
+  k_mad: 6.0
+  mad_floor: 1.0
+
+# Hydrology / Waterlogging Model
+waterlogging:
+  w_twi: 0.35
+  w_convergence: 0.25
+  w_rel_elev: -0.25
+  w_slope: -0.10
+  w_dist_stream: -0.05
+  high_percentile: 85
+  medium_percentile: 60
+  hpf_slope_max: 6.0
+  hpf_rel_elev_max: -0.1
+  basin_rel_elev_max: -0.25
+  basin_convergence_min: 0.0
+  basin_slope_max: 5.0
+  nodata: -9999.0
+
+# Drainage Routing (A*)
+drainage:
+  min_cluster_area_m2: 50
+  max_clusters: 1000
+  cost_weight_slope: 0.6
+  cost_weight_convergence: 0.4
+  min_search_radius_m: 500.0
+  search_radius_factor: 1.5
+  gravity_tolerance_m: 0.05
+  max_routing_distance_m: 300
+  max_pump_lift_m: 6.0
+  secondary_fa_percentile: 95
+  nodata: -9999.0
+
+# Stream detection thresholds (optimized for flat terrain)
+stream_density_min: 0.0001  # Changed from 0.0005 for better outlet detection
+stream_density_max: 0.002   # Changed from 0.005 for flat terrain
+boundary_width_m: 15.0      # Increased from 5.0m for flat terrain villages
+
+# Engineering Drain Design
+drain_design:
+  manning_n_earthen: 0.025
+  manning_n_lined: 0.015
+  rainfall_intensity_mm_hr: 75.0
+  rainfall_heavy_mm_hr: 120.0
+  min_pipe_dia_mm: 150
+  max_pipe_dia_mm: 1200
+  min_bed_slope: 0.001
+  min_trench_depth_m: 0.45
+  max_trench_depth_m: 2.5
+  freeboard_ratio: 0.20
+  side_slope: 1.5
+  runoff_coefficients:
+    COASTAL_LOWLAND: 0.70
+    FLAT: 0.55
+    MODERATE: 0.45
+    HILLY: 0.35
+
+# Watershed Delineation
+watershed:
+  min_basin_px: 20
+  nodata: -9999.0
